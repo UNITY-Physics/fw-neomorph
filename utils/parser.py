@@ -42,7 +42,7 @@ def parse_config(
         #age_demo = age_demo.replace('M', '') 
         try:
             age_demo = float(age_demo)
-            print(age_demo, type(age_demo))
+            log.info(age_demo)
             if age_demo < 5:
                 age_template = '3M'
             elif age_demo < 10:
@@ -51,19 +51,19 @@ def parse_config(
                 age_template = '12M'       
             elif age_demo < 22:
                 age_template = '18M'        
-            elif age_demo < 30:
+            elif age_demo <= 30 or age_demo > 30: #this change was made to account for those above 30. Redundant code but needs cleaning when we have more templates
                 age_template = '24M'
             else:
                 age_template = None
                 ValueError("Age is not provided in config.json file or dicom headers")
 
         except ValueError as ve:
-            print(f"Caught a ValueError: {ve}")
+            log.exception(f"Caught a ValueError: {ve}")
         except TypeError as te:
-            print(f"Caught a TypeError: {te}")
+            log.exception(f"Caught a TypeError: {te}")
         except Exception as e:
-            print(f"Caught a general exception: {e}")
+            log.exception(f"Caught a general exception: {e}")
     
             
-    print("Age template is: ", age_template)
+    log.info(f"Age template is: {age_template}")
     return input, age_template, demographics
