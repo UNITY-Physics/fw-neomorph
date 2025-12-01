@@ -8,7 +8,7 @@ WORKDIR /freesurfer
 # configure flywheel
 ENV HOME=/root/
 ENV FLYWHEEL="/flywheel/v0"
-ENV PYTHONPATH="/flywheel/v0:$PYTHONPATH"
+ENV PYTHONPATH="/flywheel/v0"
 
 WORKDIR $FLYWHEEL
 RUN mkdir -p $FLYWHEEL/input

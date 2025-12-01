@@ -28,7 +28,7 @@ def main(context: GearToolkitContext) -> None:
     # Set the command to be executed
     command = "/flywheel/v0/app/main.sh"
     # Add the input path and age to the command
-    command = f"{command} {input_path} {age}"
+    command = f"{command} {input_path}"
     # Execute the command
     exec_command(command, shell=True, cont_output=True)
 

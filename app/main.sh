@@ -45,7 +45,7 @@ FLYWHEEL_BASE=/flywheel/v0
 INPUT_DIR=$FLYWHEEL_BASE/input/
 WORK_DIR=$FLYWHEEL_BASE/work
 OUTPUT_DIR=$FLYWHEEL_BASE/output
-TEMPLATE_DIR=$FLYWHEEL_BASE/app/templates/${age}/
+TEMPLATE_DIR=$FLYWHEEL_BASE/app/templates/
 CONTAINER='[flywheel/ants-segmentation]'
 template=${TEMPLATE_DIR}/template_${age}_0p5mm.nii.gz
 
@@ -87,8 +87,8 @@ input_file_BC=${WORK_DIR}/native_image_BC.nii.gz
 
 
 #denoise, bias correct and bet image to help with registration to template
-ants DenoiseImage -i ${input_file} -o ${input_file_DN}
-ants N4BiasFieldCorrection -i ${input_file_DN} -o ${input_file_BC}
+DenoiseImage -i ${input_file} -o ${input_file_DN}
+N4BiasFieldCorrection -i ${input_file_DN} -o ${input_file_BC}
 mri_synthstrip -i ${input_file_BC} -o ${native_bet_image} -m ${native_brain_mask}
 sync
 echo "BET image and mask created"

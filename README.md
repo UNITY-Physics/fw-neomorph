@@ -1,5 +1,15 @@
 # MiniMORPH: A Morphometry Pipeline for Low-Field MRI in Infants
 
+## Setup
+
+This repository uses Git submodules to manage shared utilities. After cloning the repository, initialize the submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+This will populate the `shared/` directory with utilities from the [UNITY-Physics/utils](https://github.com/UNITY-Physics/utils) repository.
+
 ## Overview
 
 This script is designed to run the ANTs pipeline for segmenting infant brain images on Flywheel. The pipeline consists of the following steps:

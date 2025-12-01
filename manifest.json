@@ -2,21 +2,7 @@
   "author": "Chiara Casella, Niall Bourke, Johnny O Muircheartaigh ",
   "cite": "Sean C.L. Deoni, Muriel M.K. Bruchhage, Jennifer Beauchemin, Alexandra Volpe, Viren D'Sa, Matthew Huentelman, Steven C.R. Williams,Accessible pediatric neuroimaging using a low field strength MRI scanner, NeuroImage, Volume 238, 2021, 118273, ISSN 1053-8119, https://doi.org/10.1016/j.neuroimage.2021.118273. (https://www.sciencedirect.com/science/article/pii/S1053811921005498);",
   "command": "python3 /flywheel/v0/run.py",
-  "config": {
-    "age": {
-      "default": "None",
-      "description": "Age of the subject (Months).",
-      "enum": [
-        "None",
-        "3M",
-        "6M",
-        "12M",
-        "18M",
-        "24M"
-      ],
-      "type": "string"
-    }
-  },
+  "config": {},
   "custom": {
     "analysis-level": "participant",
     "flywheel": {
@@ -40,7 +26,7 @@
     },
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/minimorph:1.0.20"
+      "image": "flywheel/neomorph:0.0.4"
     },
     "kcl-app-binary": "app/main.sh",
     "kcl-app-modalities": [
@@ -60,7 +46,7 @@
       "non-commercial-use-only": false
     }
   },
-  "description": "This script is designed to run the ANTs pipeline for segmenting infant brain images on Flywheel. The pipeline consists of the following steps: \n 1. Register segmentation priors (tissue and CSF) and segmentation masks (ventricles, subcortical GM and collosal segments) to native space via an age-specific template \n 2. Segment the input image in template space using ANTs Atropos and fsl. *Templates included up to 24 months of age*",
+  "description": "This script is designed to run the ANTs pipeline for segmenting neonatal brain images on Flywheel. The pipeline consists of the following steps: \n 1. Register segmentation priors (tissue and CSF) and segmentation masks (ventricles, subcortical GM and collosal segments) to native space via an age-specific template \n 2. Segment the input image in template space using ANTs Atropos and fsl. *ONLY USE UPTO 1-MONTH, FOR OLDER USE neomorph*",
   "environment": {
     "CONDA_DIR": "/opt/conda",
     "FLYWHEEL": "/flywheel/v0",
@@ -86,7 +72,7 @@
     "MNI_DATAPATH": "/usr/local/freesurfer/mni/data",
     "FREESURFER": "/usr/local/freesurfer",
     "_": "/usr/bin/printenv",
-    "PYTHONPATH": "/flywheel/v0:"
+    "PYTHONPATH": "/flywheel/v0"
   },
   "inputs": {
     "api-key": {
@@ -99,11 +85,11 @@
       "optional": false
     }
   },
-  "label": "MiniMORPH",
+  "label": "neoMORPH",
   "license": "MIT",
   "maintainer": "Niall Bourke <niall.bourke@kcl.ac.uk>",
-  "name": "minimorph",
-  "source": "https://github.com/UNITY-Physics/fw-minimorph",
-  "url": "https://github.com/UNITY-Physics/fw-minimorph",
-  "version": "1.0.20"
+  "name": "neomorph",
+  "source": "https://github.com/UNITY-Physics/fw-neomorph",
+  "url": "https://github.com/UNITY-Physics/fw-neomorph",
+  "version": "0.0.4"
 }
