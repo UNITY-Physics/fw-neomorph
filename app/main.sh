@@ -137,7 +137,7 @@ items=(
     "${TEMPLATE_DIR}/ventricles_mask_0p55mm.nii.gz"
     "${TEMPLATE_DIR}/BCP_mask_padded_0p55mm.nii.gz"
     "${TEMPLATE_DIR}/cerebellum_mask_dilate_clean_padded_0p55mm.nii.gz"
-    "${TEMPLATE_DIR}/callosum_mask_relabelled_padded_0p55mm.nii.gz"
+    # "${TEMPLATE_DIR}/callosum_mask_relabelled_padded_0p55mm.nii.gz"
     "${TEMPLATE_DIR}/brainstem_mask_dilate_clean_padded_0p55mm.nii.gz"
 )
 
@@ -241,7 +241,7 @@ output_csv=${WORK_DIR}/All_volumes.csv
 # Initialize the master CSV file with headers
 echo "template_age supratentorial_tissue supratentorial_csf ventricles cerebellum cerebellum_csf brainstem brainstem_csf left_thalamus left_caudate left_putamen left_globus_pallidus right_thalamus right_caudate right_putamen right_globus_pallidus icv" > "$output_csv"
 
-atlas=${WORK_DIR}/Final_segmentation_atlas_with_callosum.nii.gz
+atlas=${WORK_DIR}/Final_segmentation_atlas.nii.gz
 
 # Extract volumes for each label
             supratentorial_general=$(fslstats ${atlas} -l 0.5 -u 1.5 -V | awk '{print $2}')

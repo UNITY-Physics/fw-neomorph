@@ -28,10 +28,18 @@ def housekeeping(demographics):
     outdir = ('/flywheel/v0/output/' + out_name)
     df.to_csv(outdir, index=False)
 
-    seg_file = '/flywheel/v0/work/Final_segmentation_atlas_with_callosum.nii.gz'
+    seg_file = '/flywheel/v0/work/Final_segmentation_atlas.nii.gz'
     new_seg_file = '/flywheel/v0/output/' + acq + '_segmentation.nii.gz'
-    shutil.copy(seg_file, new_seg_file)
+    try:
+        shutil.copy(seg_file, new_seg_file)
+        log.info(f"Copied segmentation file to {new_seg_file}")
+    except FileNotFoundError:
+        log.warning(f"Segmentation file not found: {seg_file}")
 
-    QC_montage = '/flywheel/v0/work/montage_final_segmentation_atlas_with_callosum.png'
+    QC_montage = '/flywheel/v0/work/montage_final_segmentation_atlas.png'
     new_QC_montage = '/flywheel/v0/output/' + acq + '_QC-montage.png'
-    shutil.copy(QC_montage, new_QC_montage)
+    try:
+        shutil.copy(QC_montage, new_QC_montage)
+        log.info(f"Copied QC montage to {new_QC_montage}")
+    except FileNotFoundError:
+        log.warning(f"QC montage file not found: {QC_montage}")

@@ -26,7 +26,7 @@
     },
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/neomorph:0.0.4"
+      "image": "flywheel/neomorph:0.0.7"
     },
     "kcl-app-binary": "app/main.sh",
     "kcl-app-modalities": [
@@ -91,5 +91,5 @@
   "name": "neomorph",
   "source": "https://github.com/UNITY-Physics/fw-neomorph",
   "url": "https://github.com/UNITY-Physics/fw-neomorph",
-  "version": "0.0.4"
+  "version": "0.0.7"
 }
