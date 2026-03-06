@@ -1,5 +1,5 @@
-#!/bin/sh
-set -x
+#!/usr/bin/env bash
+set -euxo pipefail
 
 ```
 # Module: Pipeline for segmenting infant brain images on Flywheel
@@ -51,8 +51,25 @@ CONTAINER='[flywheel/ants-segmentation]'
 template=${TEMPLATE_DIR}/template_0M_brain_dil.nii.gz
 template_mask=${TEMPLATE_DIR}/brainMask_dil.nii.gz
 
+require_file() {
+  local f="$1"
+  if [[ ! -f "$f" ]]; then
+    echo "${CONTAINER} ERROR: Required file missing: $f"
+    exit 3
+  fi
+}
+
 echo "permissions"
 ls -ltra /flywheel/v0/
+
+# Preflight architecture check to avoid qemu runtime crashes with x86-only binaries
+arch=$(uname -m)
+if [ "$arch" != "x86_64" ] && [ "$arch" != "amd64" ]; then
+  echo "${CONTAINER} ERROR: Unsupported runtime architecture: ${arch}"
+  echo "${CONTAINER} This gear requires x86_64/amd64 binaries (FSL/ANTs/FreeSurfer stack)."
+  echo "${CONTAINER} Re-run with Docker platform linux/amd64 (for example: docker run --platform linux/amd64 ...)."
+  exit 2
+fi
 
 ##############################################################################
 # Handle INPUT file
@@ -201,21 +218,21 @@ echo -e "\n --- Step 3: Segmenting images --- "
 # First create a safer mask by merging Synthstrip with the Template-based mask
 # This prevents the cropping if Synthstrip fails locally
 
-ants antsApplyTransforms -d 3 -i ${template_mask} -r ${input_file_BC} \
-    -o ${WORK_DIR}/template_mask_in_native.nii.gz \
-    -n NearestNeighbor -t [${AFFINE},1] -t ${INVERSE_WARP}
+antsApplyTransforms -d 3 -i ${template_mask} -r ${input_file_BC} \
+  -o ${WORK_DIR}/template_mask_in_native.nii.gz \
+  -n NearestNeighbor -t [${AFFINE},1] -t ${INVERSE_WARP}
 
 fslmaths ${native_brain_mask} -add ${WORK_DIR}/template_mask_in_native.nii.gz -bin ${WORK_DIR}/combined_mask.nii.gz
 
 sync
 
-ants antsAtroposN4.sh -d 3 \
-    -a ${input_file_BC} \
-    -x ${WORK_DIR}/combined_mask.nii.gz \
-    -p ${WORK_DIR}/prior%d_scale_final2.nii.gz \
-    -c 3 -y 1 \
-    -w 0.25 \
-    -o ${WORK_DIR}/${SUBJECT}_ants_atropos_
+antsAtroposN4.sh -d 3 \
+  -a ${input_file_BC} \
+  -x ${WORK_DIR}/combined_mask.nii.gz \
+  -p ${WORK_DIR}/prior%d_scale_final2.nii.gz \
+  -c 3 -y 1 \
+  -w 0.25 \
+  -o ${WORK_DIR}/${SUBJECT}_ants_atropos_
 sync
 echo -e "\n Past Atropos segmentation step "
 
@@ -225,6 +242,10 @@ sleep 3
 Posterior1=${WORK_DIR}/${SUBJECT}_ants_atropos_SegmentationPosteriors1.nii.gz
 Posterior2=${WORK_DIR}/${SUBJECT}_ants_atropos_SegmentationPosteriors2.nii.gz
 Posterior3=${WORK_DIR}/${SUBJECT}_ants_atropos_SegmentationPosteriors3.nii.gz
+
+require_file "${Posterior1}"
+require_file "${Posterior2}"
+require_file "${Posterior3}"
 
 
 echo -e "\n --- Step 4: Hello MDR, time to refine segmentations --- "
@@ -251,6 +272,7 @@ if fslmaths ${WORK_DIR}/temp_atlas.nii.gz -thr 1 -uthr 1 -mul ${WORK_DIR}/BCP_su
   echo "Atlas with subcortical GM created successfully."
 else
   echo "Error: Failed to create atlas with subcortical GM."
+  exit 11
 fi
 
 sync
@@ -266,6 +288,7 @@ if fslmaths ${WORK_DIR}/temp_atlas.nii.gz -thr 1 -uthr 2 -mul ${WORK_DIR}/cerebe
   echo "Atlas with cerebellum created successfully."
 else
   echo "Error: Failed to add cerebellum to the atlas."
+  exit 12
 fi
 
 echo "Adding the brainstem to the atlas..."
@@ -273,14 +296,17 @@ echo "Adding the brainstem to the atlas..."
 
 if fslmaths ${WORK_DIR}/temp_atlas.nii.gz -thr 1 -uthr 2 -mul ${WORK_DIR}/brainstem_mask.nii.gz ${WORK_DIR}/brainstem_mask_mul && \
   fslmaths ${WORK_DIR}/brainstem_mask_mul -thr 40 -uthr 40 ${WORK_DIR}/brainstem.nii.gz && \
-  fslmaths ${WORK_DIR}/temp_atlas -add ${WORK_DIR}/brainstem ${WORK_DIR}/temp_atlas.nii.gz && \
+  fslmaths ${WORK_DIR}/temp_atlas.nii.gz -add ${WORK_DIR}/brainstem ${WORK_DIR}/temp_atlas.nii.gz && \
   fslmaths ${WORK_DIR}/brainstem_mask_mul -thr 80 -uthr 80 -div 80 -mul 40 ${WORK_DIR}/brainstem_csf.nii.gz && \
   fslmaths ${WORK_DIR}/temp_atlas.nii.gz -add ${WORK_DIR}/brainstem_csf ${WORK_DIR}/Final_segmentation_atlas.nii.gz; then
   echo "Atlas with brainstem created successfully." 
 #Supratentorial tissue, supratentorial csf, ventricles, subcortical GM (left/right caudate, putamen, thalamus, globus pallidus), cerebellum, cerebellum CSF, brainstem, brainstem CSF
 else
   echo "Error: Failed to add brainstem to the atlas."
+  exit 13
 fi
+
+require_file "${WORK_DIR}/Final_segmentation_atlas.nii.gz"
 
 
 # Short pause of 3 seconds

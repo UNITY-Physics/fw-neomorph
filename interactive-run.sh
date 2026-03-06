@@ -5,12 +5,16 @@
 # The gear is run in the bash shell so that you can interact with the container.
 # Assumes that API_KEY is set in the environment and added to config.json.
 
-GEAR=fw-minimorph
-IMAGE=flywheel/minimorph:$1
-LOG=minimorph-$1-$2
+GEAR=fw-neomorph
+IMAGE=flywheel/neomorph:$1
+LOG=neomorph-$1-$2
+PLATFORM=${PLATFORM:-linux/amd64}
+
+echo "Running ${IMAGE} on platform ${PLATFORM}"
+echo "Host architecture: $(uname -m)"
 
 # Command:
-docker run -it --cpus 6.0 --rm --entrypoint bash\
+docker run -it --cpus 6.0 --rm --platform ${PLATFORM} --entrypoint bash\
 	-v $3/unity/fw-gears/${GEAR}/app/:/flywheel/v0/app\
 	-v $3/unity/fw-gears/${GEAR}/utils:/flywheel/v0/utils\
 	-v $3/unity/fw-gears/${GEAR}/shared/utils:/flywheel/v0/shared/utils\

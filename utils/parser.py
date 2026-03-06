@@ -39,30 +39,28 @@ def parse_config(
         log.warning("Age is not provided in the config.json file. Checking for age in dicom headers...")
         age_demo = demographics['age'].values[0]
         log.info(f"Age from demographics:  {age_demo}")
-        #age_demo = age_demo.replace('M', '') 
-        try:
-            age_demo = float(age_demo)
-            log.info(age_demo)
-            if age_demo < 5:
-                age_template = '3M'
-            elif age_demo < 10:
-                age_template = '6M'
-            elif age_demo < 16:
-                age_template = '12M'       
-            elif age_demo < 22:
-                age_template = '18M'        
-            elif age_demo <= 30 or age_demo > 30: #this change was made to account for those above 30. Redundant code but needs cleaning when we have more templates
-                age_template = '24M'
-            else:
+        if age_demo in [None, "None", "", "NA", "nan"]:
+            log.warning("No demographic age available. Proceeding without age template override.")
+            age_template = None
+        else:
+            try:
+                age_demo = float(age_demo)
+                log.info(age_demo)
+                if age_demo < 5:
+                    age_template = '3M'
+                elif age_demo < 10:
+                    age_template = '6M'
+                elif age_demo < 16:
+                    age_template = '12M'
+                elif age_demo < 22:
+                    age_template = '18M'
+                elif age_demo <= 30 or age_demo > 30: #this change was made to account for those above 30. Redundant code but needs cleaning when we have more templates
+                    age_template = '24M'
+                else:
+                    age_template = None
+            except (ValueError, TypeError) as err:
+                log.warning(f"Unable to parse demographic age '{age_demo}': {err}")
                 age_template = None
-                ValueError("Age is not provided in config.json file or dicom headers")
-
-        except ValueError as ve:
-            log.exception(f"Caught a ValueError: {ve}")
-        except TypeError as te:
-            log.exception(f"Caught a TypeError: {te}")
-        except Exception as e:
-            log.exception(f"Caught a general exception: {e}")
     
             
     log.info(f"Age template is: {age_template}")
