@@ -1,6 +1,6 @@
 {
   "author": "Chiara Casella, Niall Bourke, Johnny O Muircheartaigh ",
-  "cite": "Sean C.L. Deoni, Muriel M.K. Bruchhage, Jennifer Beauchemin, Alexandra Volpe, Viren D'Sa, Matthew Huentelman, Steven C.R. Williams,Accessible pediatric neuroimaging using a low field strength MRI scanner, NeuroImage, Volume 238, 2021, 118273, ISSN 1053-8119, https://doi.org/10.1016/j.neuroimage.2021.118273. (https://www.sciencedirect.com/science/article/pii/S1053811921005498);",
+  "cite": "MiniMORPH: A Morphometry Pipeline for Low-Field MRI in Infants. Chiara Casella, Aksel Leknes, Niall J. Bourke, Ayo Zahra, Daniel Elijah Scheiene, Vanessa Kyriakopoulou, Simone R. Williams, Layla E. Bradford, Joanitta Murungi, Steven C.R. Williams, Sean C.L. Deoni, Victoria Nankabirwa, Kirsten A Donald, Muriel Marisa Katharina Bruchhage, Jonathan O’Muircheartaigh;",
   "command": "python3 /flywheel/v0/run.py",
   "config": {},
   "custom": {
@@ -8,7 +8,7 @@
     "flywheel": {
       "classification": {
         "components": [
-          "FreeSurfer"
+          "segmentation"
         ],
         "keywords": [
           "segmentation",
@@ -26,7 +26,7 @@
     },
     "gear-builder": {
       "category": "analysis",
-      "image": "flywheel/neomorph:0.0.7"
+      "image": "flywheel/neomorph:0.0.8"
     },
     "kcl-app-binary": "app/main.sh",
     "kcl-app-modalities": [
@@ -91,5 +91,5 @@
   "name": "neomorph",
   "source": "https://github.com/UNITY-Physics/fw-neomorph",
   "url": "https://github.com/UNITY-Physics/fw-neomorph",
-  "version": "0.0.7"
+  "version": "0.0.8"
 }
