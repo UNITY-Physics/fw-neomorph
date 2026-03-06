@@ -24,6 +24,9 @@ def SegQC(input_image_path, subj):
 
     # Find all files that end with '_segmentation.nii.gz'
     atlas_image_path = glob.glob(os.path.join(overlay_dir, '*_segmentation.nii.gz'))
+    if not atlas_image_path:
+        print(f"No segmentation output found for {subj}. Skipping SegQC.")
+        return
     # Take the first file
     atlas_image_path = atlas_image_path[0]
 

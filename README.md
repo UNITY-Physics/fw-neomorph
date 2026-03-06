@@ -1,4 +1,4 @@
-# MiniMORPH: A Morphometry Pipeline for Low-Field MRI in Infants
+# neoMORPH: A Morphometry Pipeline for Neonatal Low-Field MRI
 
 ## Setup
 
@@ -12,52 +12,50 @@ This will populate the `shared/` directory with utilities from the [UNITY-Physic
 
 ## Overview
 
-This script is designed to run the ANTs pipeline for segmenting infant brain images on Flywheel. The pipeline consists of the following steps:
-1. Register segmentation priors (tissue and CSF) and segmentation masks (ventricles, subcortical GM and collosal segments) to native space via an age-specific template
-2. Segment the input image in template space using ANTs Atropos and fsl
+`neoMORPH` is a Flywheel gear for segmentation and volumetry of **neonatal low-field T2-weighted brain MRI**.
 
-The script assumes that the input image is in NIfTI format. The script outputs the segmentations in native space.
+This refactored workflow is neonatal-specific and currently uses a fixed **0-month (0M)** template and priors.
 
-**Computation of Age-Specific Templates, Segmentation Priors and Segmentation Masks:**
+### Pipeline summary
 
-i) Age-specific templates: The templates used in this pipeline were constructed using a subset of high-quality datasets from the UCT-Khula study. Brain extraction was performed on the isotropic T2-weighted images using the mri_synthstrip tool. Edge images were generated using FSL. Both the brain-extracted and edge images were used as input channels for template building in antsMultivariateTemplateConstruction.sh.
+1. Preprocess native input (denoise, bias-correct, brain extraction)
+2. Register neonatal native brain to the neonatal template
+3. Warp priors and anatomical masks to native space
+4. Run `antsAtroposN4.sh` using neonatal priors
+5. Refine posterior maps into a final labeled segmentation atlas
+6. Generate QC montage images and volume estimates
 
-ii) Segmentation priors: 
-To generate tissue and CSF priors, age-specific T2-weighted images and corresponding tissue segmentation maps from the Baby Connectome Project atlas (BCP, https://www.nitrc.org/projects/uncbcp_4d_atlas/)  were non-linearly registered to the age-specific study template using ANTs. These transformations were applied to the white matter (WM), grey matter (GM), and cerebrospinal fluid (CSF) segmentation maps.
-- Tissue prior: The WM and GM priors were summed to generate a combined "tissue" prior.
-- Skull prior: A "skull" prior was created by dilating the brain mask and subtracting the original mask, isolating the skull boundary. Note: this skull prior is used exclusively to improve the quality of extra-axial segmentations and should not be used for volumetric analysis.
+## Scope and intended use
 
-iii) Segmentation masks:
-- Subcortical GM segmentation masks: The age-specific template was resampled to a 0.5mm isotropic resolution, and the subcortical parcellation maps from the BCP atlas were registered to this template.
-- Callosal masks: The age-specific template was resampled to a 1mm isotropic resolution, and the Penn-CHOP Infant Brain Atlas (1-year-old, https://brainmrimap.org/infant-atlas.html) was registered to it.
-- Ventricles masks: Ventricles were manually delineated in template space, and their accuracy was confirmed through visual inspection by a second expert.
+- Intended for **neonatal scans** (up to 1 month)
+- For older infants, use the `MiniMORPH` workflow/gear
 
-**Segmentation pipeline:**
+## Usage
 
-Native, brain-extracted T2-w isotropic files are registered to the age-specific template using ANTs’ SyN registration. The resulting transformations are then applied to the CSF, tissue and skull priors. Subsequently, antsAtroposN4.sh is used to segment the native image into three tissue classes, using a dilated brain mask, with a priors’ weight of 0.3. The resulting tissue segmentation posteriors are refined to separate the ventricles from other cerebrospinal fluid (CSF) regions. To obtain the subcortical GM  and callosal segmentations, the tissue posterior obtained with ANTs is multiplied by the subcortical GM and callosum masks in native space. 
+This script is designed to run as a Flywheel gear and takes one required imaging input:
 
-[Usage](#usage)
+1. `input` (`.nii` or `.nii.gz`)
 
-This script is designed to be run as a Flywheel Gear. The script takes two inputs:
-1. The input image to segment
-2. The age of the template to use in months (e.g. 3, 6, 12, 24)
+### Running outside Flywheel
 
-*To run outside of Flywheel:*  
-Copy the app/main.sh script and provide the input image and age of the template to use in months (e.g. 3, 6, 12, 24) as arguments. 
-The path variables in the script should be adjusted to the location of the segmentation priors and masks on your system. 
-Template images and segmentation priors and masks are available from https://www.nitrc.org/projects/uncbcp_4d_atlas/ and https://brainmrimap.org/infant-atlas.html.
+Copy `app/main.sh` and run it with the input NIfTI path:
 
-[FAQ](#faq)
+```bash
+app/main.sh /path/to/input.nii.gz
+```
+
+The script expects neonatal template assets and priors under `app/templates/`.
 
 ### Cite
 
-**license:**
-MIT License
+**License:** MIT License
 
-**url:** <https://github.com/Nialljb/MiniMORPH>
+**URL:** <https://github.com/UNITY-Physics/fw-neomorph>
 
-**cite:**  
-Fast and sequence-adaptive whole-brain segmentation using parametric Bayesian modeling. O. Puonti, J.E. Iglesias, K. Van Leemput. NeuroImage, 143, 235-249, 2016.
+**Cite:**  
+MiniMORPH: A Morphometry Pipeline for Low-Field MRI in Infants
+Chiara Casella, Aksel Leknes, Niall J. Bourke, Ayo Zahra, Daniel Elijah Scheiene, Vanessa Kyriakopoulou, Simone R. Williams, Layla E. Bradford, Joanitta Murungi, Steven C.R. Williams, Sean C.L. Deoni, Victoria Nankabirwa, Kirsten A Donald, Muriel Marisa Katharina Bruchhage, Jonathan O’Muircheartaigh 
+medRxiv 2025.07.01.25330469; doi: https://doi.org/10.1101/2025.07.01.25330469
 
 ### Classification
 
@@ -82,43 +80,39 @@ Fast and sequence-adaptive whole-brain segmentation using parametric Bayesian mo
   * **Classification**: api-key
   * **Description**: Flywheel API key.
 
-### Config
-
-* Age
-  * **Name**: age
-  * **Type**: string
-  * **Description**: age in months of the template to use
-  * **Default**: None
-
 * input
   * **Base**: file
-  * **Description**: input file (usually isotropic reconstruction)
+  * **Description**: neonatal low-field input file (typically isotropic T2w reconstruction)
   * **Optional**: false
 
+### Config
+
+This gear currently has no required user-configurable parameters in `manifest.json`.
+
 ### Outputs
+
 * output
   * **Base**: file
-  * **Description**: segmentated file 
+  * **Description**: final segmentation atlas (`Final_segmentation_atlas.nii.gz`)
   * **Optional**: false
 
 * parcelation
   * **Base**: file
-  * **Description**: parcelation nifti files for visual QC
+  * **Description**: segmentation/QC artifacts (including montage images)
   * **Optional**: true
 
 * volume
   * **Base**: file
-  * **Description**: volume estimation file (csv)
+  * **Description**: volume estimation CSV (`All_volumes.csv`)
   * **Optional**: true
 
 #### Metadata
 
-No metadata currently created by this gear
+No metadata currently created by this gear.
 
 ### Pre-requisites
 
 - Three dimensional structural image
-
 
 1. ***dcm2niix***
     * Level: Any
@@ -127,21 +121,11 @@ No metadata currently created by this gear
 3. ***file-classifier***
     * Level: Any
 
-#### Prerequisite
-
-
 ### Description
 
-This gear is run at either the `Subject` or the `Session` level. It downloads the data
-for that subject/session into the `/flwyhweel/v0/work/` folder and then runs the
-`MiniMORPH` pipeline on it.
+This gear runs the neonatal `neoMORPH` segmentation pipeline on Flywheel using a neonatal low-field input image.
 
-After the pipeline is run, the output folder is zipped and saved into the analysis
-container.
-
-#### File Specifications
-
-This section contains specifications on any input files that the gear may need
+After the pipeline is run, segmentation, QC, and volumetry outputs are saved into the analysis container.
 
 ### Workflow
 
@@ -154,7 +138,7 @@ A picture and description of the workflow
     D2N((dcm2niix)):::gear --> MRR;
     MRR((mrr)):::gear --> ANA;
     ANA[Analysis]:::container;
-    
+
     classDef container fill:#57d,color:#fff
     classDef input fill:#7a9,color:#fff
     classDef gear fill:#659,color:#fff
@@ -169,7 +153,7 @@ Description of workflow
    3. dcm2niix
 3. Select either a subject or a session.
 4. Run the MRR gear (Hyperfine multi-resolution registration)
-5. Run the MiniMORPH gear
+5. Run the neoMORPH gear
 
 ### Use Cases
 
